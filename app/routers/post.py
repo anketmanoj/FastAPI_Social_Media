@@ -1,3 +1,4 @@
+from unittest import result
 from fastapi import Response, HTTPException, Depends, APIRouter, status
 from typing import List, Optional
 from app import oauth2
@@ -5,6 +6,7 @@ from .. import models, schema
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models
+from sqlalchemy import func
 
 router = APIRouter(
     prefix="/posts",
@@ -16,6 +18,13 @@ def get_all_posts(db: Session = Depends(get_db), current_user: int = Depends(oau
     print(limit)
     posts = db.query(models.Posts).filter(models.Posts.title.contains(search)).limit(limit=limit).offset(skip).all()
     return posts
+
+@router.get("/likes", response_model=List[schema.NoOfLikes])
+def get_post_with_likes(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    results = db.query(models.Posts, func.count(models.Votes.post_id).label("no_of_likes")).join(models.Votes, models.Votes.post_id == models.Posts.id, isouter=True).group_by(models.Posts.id)
+    print(results)
+    return results.all()
+
 
 @router.get("/owner_id:{owner_id}")
 def get_only_user_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):

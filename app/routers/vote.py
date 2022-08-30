@@ -9,11 +9,12 @@ router = APIRouter(
     tags=['Votes']
 ) 
 
+
 @router.post("/", status_code= status.HTTP_201_CREATED)
 def submit_vote(vote: schema.Vote, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     findPost = db.query(models.Posts).filter(models.Posts.id == vote.post_id)
     if not findPost.first():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No post with that id")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No post with that id")
     vote_query = db.query(models.Votes).filter(models.Votes.post_id == vote.post_id, models.Votes.user_id == current_user.id)
     found_vote = vote_query.first()
     if (vote.dir == 1):

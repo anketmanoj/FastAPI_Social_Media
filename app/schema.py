@@ -46,5 +46,9 @@ class Vote(BaseModel):
     post_id: int
     dir: conint(le=1)
 
+class NoOfLikes(BaseModel):
+    Posts: PostResponse
+    no_of_likes: int
+
 
 
