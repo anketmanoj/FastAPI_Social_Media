@@ -25,6 +25,12 @@ def get_post_with_likes(db: Session = Depends(get_db), current_user: int = Depen
     print(results)
     return results.all()
 
+@router.get("/likes/id:{id}", response_model=List[schema.NoOfLikes])
+def get_post_with_likes(id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    results = db.query(models.Posts, func.count(models.Votes.post_id).label("no_of_likes")).filter(models.Posts.id == id).join(models.Votes, models.Votes.post_id == models.Posts.id, isouter=True).group_by(models.Posts.id)
+    print(results)
+    return results.all()
+
 
 @router.get("/owner_id:{owner_id}")
 def get_only_user_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
